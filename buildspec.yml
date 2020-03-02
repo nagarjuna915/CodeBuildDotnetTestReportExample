@@ -12,7 +12,7 @@ phases:
             - dotnet test -c Release ./CodeBuildDotnetTestReportExample.Tests/CodeBuildDotnetTestReportExample.Tests.csproj --logger trx --results-directory ./testresults
     post_build:
         commands:
-            - trx2junit ./testresults/*
+            - ~/.dotnet/tools/trx2junit ./testresults/*
 reports:
     DotnetTestExamples:
         files:
