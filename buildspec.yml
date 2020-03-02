@@ -4,7 +4,17 @@ phases:
     install:
         runtime-versions:
             dotnet: 2.2
+        commands:
+            - dotnet tool install -g trx2junit
     build:
         commands:
-          - dotnet build -c Release ./CodeBuildDotnetTestReportExample/CodeBuildDotnetTestReportExample.csproj
-          - dotnet test -c Release ./CodeBuildDotnetTestReportExample.Tests/CodeBuildDotnetTestReportExample.Tests.csproj
+            - dotnet build -c Release ./CodeBuildDotnetTestReportExample/CodeBuildDotnetTestReportExample.csproj
+            - dotnet test -c Release ./CodeBuildDotnetTestReportExample.Tests/CodeBuildDotnetTestReportExample.Tests.csproj --logger trx --results-directory ./testresults
+    post_build:
+        commands:
+            - trx2junit ./testresults/*
+reports:
+    DotnetTestExamples:
+        files:
+            - '**/*'
+        base-directory: './testresults'          
