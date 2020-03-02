@@ -59,7 +59,7 @@ phases:
 The first step to making this work was making sure the `dotnet test` command logged the test run. To do that I need to specify the logger format and where to put the logs. I changed the `dotnet test` command to look like this to use the `trx` log format and put the results in the `../testresults` directory.
 
 ```yml
-            - dotnet test -c Release ./CodeBuildDotnetTestReportExample.Tests/CodeBuildDotnetTestReportExample.Tests.csproj --logger trx --results-directory ../testresults
+            - dotnet test -c Release <project-path> --logger trx --results-directory ../testresults
 
 ```
 
