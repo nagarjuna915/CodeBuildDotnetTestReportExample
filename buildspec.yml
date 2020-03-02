@@ -1,0 +1,10 @@
+version: 0.2
+
+phases:
+    install:
+        runtime-versions:
+            dotnet: 2.2
+    build:
+        commands:
+          - dotnet build -c Release ./CodeBuildDotnetTestReportExample/CodeBuildDotnetTestReportExample.csproj
+          - dotnet test -c Release ./CodeBuildDotnetTestReportExample.Tests/CodeBuildDotnetTestReportExample.Tests.csproj
