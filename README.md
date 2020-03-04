@@ -63,7 +63,7 @@ The first step to making this work was making sure the `dotnet test` command log
 
 ```
 
-## What do I do with a trx file?
+## What to do with a trx file?
 
 As I mentioned before CodeBuild's test reporting supports JUnit XML and Cucumber JSON formatted files. So what are we going to do with trx files which `dotnet test` created.? The .NET community has created a .NET Core Global Tool called [trx2junit](https://www.nuget.org/packages/trx2junit/) to convert trx files into JUnit xml files.
 
@@ -110,5 +110,6 @@ reports:
         base-directory: './testresults'          
 ```
 
-## Examining the test report
+## Setting up the build project
 
+![alt text](./resources/build-setup.gif "Setup")
