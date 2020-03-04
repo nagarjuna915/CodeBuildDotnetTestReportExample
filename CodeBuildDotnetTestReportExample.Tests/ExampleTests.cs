@@ -24,6 +24,7 @@ namespace CodeBuildDotnetTestReportExample.Tests
         [InlineData("fffaaa")]
         public void TestMalformedUri(string uri)
         {
+            Console.WriteLine($"Testing uri {uri}");
             new Uri(uri);
         }
     }
