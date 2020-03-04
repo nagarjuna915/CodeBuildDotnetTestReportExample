@@ -112,4 +112,9 @@ reports:
 
 ## Setting up the build project
 
-![alt text](./resources/build-setup.gif "Setup")
+![alt text](./resources/build-setup.gif "CodeBuild project Setup")
+
+
+## View test report
+
+![alt text](./resources/report-overview.png "Test report")
