@@ -1,12 +1,12 @@
 # AWS CodeBuild Test Reporting with .NET Core
 
-As part of AWS re:Invent 2019 the CodeBuild team announced a new test reporting feature which can help make diagnosing test failures in CodeBuild so much easier. You can read more about [here](https://aws.amazon.com/blogs/devops/test-reports-with-aws-codebuild/).
+At AWS re:Invent 2019, [AWS CodeBuild](https://aws.amazon.com/codebuild/) announced a new test reporting feature which can help make diagnosing test failures in CodeBuild much easier. You can read more about it [here](https://aws.amazon.com/blogs/devops/test-reports-with-aws-codebuild/).
 
-As of the time of writing this post CodeBuild supports JUnit XML and Cucumber JSON formatted files for creating test reports. I wanted to use this feature for .NET and after a little research I was quickly able to add my .NET tests to my CodeBuild project's reports. Let's take a look at how I made this work.
+As of the time of writing this post CodeBuild supports JUnit XML or Cucumber JSON formatted files for creating test reports. I wanted to use this feature for .NET and after a little research I was able to quickly add support for .NET tests to my CodeBuild projects. Let's take a look at how I made this work.
 
 ## Project Setup
 
-For demonstration purpose I have a test project with the following tests. I admit these tests don't really do anything but they will give me 3 passing tests and one failing test for a malformed uri exception.
+For demonstration purposes I have a test project with the following tests. I admit these tests don't really do anything but they will give me 3 passing tests and one failing test for a malformed Uri exception.
 
 ```csharp
 using System;
@@ -20,14 +20,14 @@ namespace CodeBuildDotnetTestReportExample.Tests
         [Fact]
         public void TestSuccess1()
         {
-            
+
         }
-        
-        
+
+
         [Fact]
         public void TestSuccess2()
         {
-            
+
         }
 
         [Theory]
@@ -41,7 +41,7 @@ namespace CodeBuildDotnetTestReportExample.Tests
 }
 ```
 
-Now to run this project CodeBuild I first started with a `buildspec.yml` file that built my project and ran my tests.
+To run this project with CodeBuild I first started with a `buildspec.yml` file that built my project and ran my tests.
 
 ```yml
 version: 0.2
@@ -56,18 +56,17 @@ phases:
             - dotnet test -c Release ./CodeBuildDotnetTestReportExample.Tests/CodeBuildDotnetTestReportExample.Tests.csproj
 ```
 
-The first step to making my test reports was making sure the `dotnet test` command logged the test run. To do that I need to specify the logger format and where to put the logs. I changed the `dotnet test` command to use the `trx` log format and put the results in the `../testresults` directory.
+The first step to making my test reports was making sure the `dotnet test` command logged the test run. To do that I need to specify the logger format and where to put the logs. I changed the `dotnet test` command shown above to use the `trx` log format and to put the results in the `../testresults` directory.
 
 ```yml
             - dotnet test -c Release <project-path> --logger trx --results-directory ../testresults
-
 ```
 
-## What to do with a trx file?
+## What to do with a `trx` format file?
 
-As I mentioned before CodeBuild's test reporting supports JUnit XML and Cucumber JSON formatted files. So what are we going to do with trx files which `dotnet test` created? The .NET community has created a .NET Core Global Tool called [trx2junit](https://www.nuget.org/packages/trx2junit/) to convert trx files into JUnit xml files.
+As I mentioned earlier, test reporting from CodeBuild currently supports JUnit XML or Cucumber JSON formatted files. So what are we going to do with the `trx` format files that `dotnet test` created? The .NET community has created a .NET Core Global Tool called [trx2junit](https://www.nuget.org/packages/trx2junit/) that can be used to convert `trx` files into JUnit XML format files.
 
-What we need to do now in our `buildspec.yml` file is install trx2junit and run it on the trx files created by dotnet test. To do that I updated the **install** phase of my `buildspec.yml` file to install **trx2junit**.
+My next step was to modify my `buildspec.yml` file to install the `trx2junit` global tool and then run it on the `trx` files created by `dotnet test`. To do that I first updated the **install** phase of my `buildspec.yml` file to install **trx2junit**.
 
 ```yml
     install:
@@ -75,9 +74,10 @@ What we need to do now in our `buildspec.yml` file is install trx2junit and run 
             dotnet: 2.2
         commands:
             - dotnet tool install -g trx2junit
+            - dotnet build -c Release ...
 ```
 
-With **trx2unit** installed I added a **post_build** phase to convert the trx files in the **testresults** directory to JUnit xml files. Depending on your Docker image being used the `~/.dotnet/tools/` directory might not be in the **PATH** environment variable. If its not then just executing **trx2junit** will fail because the executable can't be found. To ensure trx2junit can always be found I executed the tool using full path relative to the home directory and ignore the need for `~/.dotnet/tools/` being in the **PATH** environment variable.
+Next I added a **post_build** phase to convert the `trx` files in the **testresults** directory to JUnit XML files. Depending on the Docker image being used the `~/.dotnet/tools/` directory might not be in the **PATH** environment variable. If it is not then just executing **trx2junit** will fail because the executable can't be found. To ensure **trx2junit** can always be found I executed the tool using the full path relative to the home directory, bypassing the need for `~/.dotnet/tools/` to be in the **PATH** environment variable.
 
 ```yml
     post_build:
@@ -85,7 +85,7 @@ With **trx2unit** installed I added a **post_build** phase to convert the trx fi
             - ~/.dotnet/tools/trx2junit ./testresults/*
 ```
 
-After doing these changes to convert the trx files from `dotnet test` into JUnit XML files we can integrate .NET's test logging in CodeBuild's test reporting. The last update I needed to make to my `buildspec.yml` was to tell CodeBuild where to find the test logs using the **reports** section. Below is the full `buildspec.yml` file including the **report** section.
+After converting the `trx` files I can now integrate .NET's test logging into CodeBuild's test reporting. The last update I needed to make to my `buildspec.yml` was to tell CodeBuild where to find the test logs using the **reports** section. Below is the final `buildspec.yml` I used, and inside the **reports** section you can see `DotnetTestExamples` was the name I chose for my test reports group for this project. You can read more about CodeBuild, and buildspec files, in the [CodeBuild User Guide](https://docs.aws.amazon.com/codebuild/latest/userguide/welcome.html).
 
 ```yml
 version: 0.2
@@ -107,14 +107,14 @@ reports:
     DotnetTestExamples:
         files:
             - '**/*'
-        base-directory: './testresults'          
+        base-directory: './testresults'
 ```
 
 ## Setting up the build project
 
-Setting a CodeBuild project has a lot of options. Like what source control provider to use or whether create a stand alone job or part of a pipeline. For this post I'm going to keep it simple and create a standalone CodeBuild project pointing to a GitHub repository. Here are the steps I used to create the project.
+A CodeBuild project can be configured with a variety of options, for example what source control provider should be used, or whether to run as a stand alone job, or run as part of a pipeline. For this post I'm going to keep it simple and create a standalone CodeBuild project pointing to a GitHub repository. Here are the steps I used to create the CodeBuild project.
 
-* Log onto the CodeBuild console
+* Sign in to the AWS Management Console and navigate to CodeBuild
 * Click **Create build project**
 * Set a project name
 * Select the GitHub repository
@@ -123,20 +123,18 @@ Setting a CodeBuild project has a lot of options. Like what source control provi
   * Runtime = Standard
   * Image = aws/codebuild/standard:2.0
   * Service Role = New service role
-* Click **Create build project**
+* Click **Create build project** to finish
 
 ![alt text](./resources/build-setup.gif "CodeBuild project Setup")
 
 Once the project is created we can start a build which will execute the **buildspec.yml** to build the project and run the tests.
 
-
 ## View test report
 
-Now as the builds run CodeBuild will capture the test reports identified in the **reports** section of the **buildspec.yml** file. In the CodeBuild console we can view test reports in the **Report group** section. You can see here my 4 test ran and which one failed. Clicking the test will give details about the failed test.
+CodeBuild will capture the test reports identified in the **reports** section of the **buildspec.yml** file as the builds execute, and we can view the test reports identified in the **report group** I named `DotnetTestExamples` in the CodeBuild console. The example below shows my 4 tests ran, and which one failed. Clicking the failed test will give more details about the failure.
 
 ![alt text](./resources/report-overview.png "Test report")
 
-
 ## Conclusion
 
-Adding test reports to your CodeBuild project will make it easier to diagnose CodeBuild jobs. Hopefully with these few steps it will be easy to add reporting to your .NET builds.
+Adding test reports to your CodeBuild project makes it easier to diagnose CodeBuild jobs and you can see how, with just a few steps, you can add reporting to your .NET builds in [AWS CodeBuild](https://aws.amazon.com/codebuild/).
