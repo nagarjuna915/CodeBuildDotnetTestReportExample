@@ -49,7 +49,7 @@ version: 0.2
 phases:
     install:
         runtime-versions:
-            dotnet: 2.2
+            dotnet: 3.1
     build:
         commands:
             - dotnet build -c Release ./CodeBuildDotnetTestReportExample/CodeBuildDotnetTestReportExample.csproj
@@ -71,7 +71,7 @@ My next step was to modify my `buildspec.yml` file to install the `trx2junit` gl
 ```yml
     install:
         runtime-versions:
-            dotnet: 2.2
+            dotnet: 3.1
         commands:
             - dotnet tool install -g trx2junit
             - dotnet build -c Release ...
@@ -93,7 +93,7 @@ version: 0.2
 phases:
     install:
         runtime-versions:
-            dotnet: 2.2
+            dotnet: 3.1
         commands:
             - dotnet tool install -g trx2junit
     build:
