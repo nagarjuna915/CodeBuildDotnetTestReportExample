@@ -1,5 +1,4 @@
 using System;
-using System.Net;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -19,8 +18,8 @@ namespace CodeBuildDotnetTestReportExample.Tests
         {
             OutputHelper.WriteLine("TODO Test something");
         }
-        
-        
+
+
         [Fact]
         public void TestSuccess2()
         {
