@@ -56,10 +56,10 @@ phases:
             - dotnet test -c Release ./CodeBuildDotnetTestReportExample.Tests/CodeBuildDotnetTestReportExample.Tests.csproj
 ```
 
-The first step to making my test reports was making sure the `dotnet test` command logged the test run. To do that I need to specify the logger format and where to put the logs. I changed the `dotnet test` command shown above to use the `trx` log format and to put the results in the `../testresults` directory.
+The first step to making my test reports was making sure the `dotnet test` command logged the test run. To do that I need to specify the logger format and where to put the logs. I changed the `dotnet test` command shown above to use the `trx` log format and to put the results in the `./testresults` directory.
 
 ```yml
-            - dotnet test -c Release <project-path> --logger trx --results-directory ../testresults
+            - dotnet test -c Release <project-path> --logger trx --results-directory ./testresults
 ```
 
 ## What to do with a `trx` format file?
@@ -99,7 +99,7 @@ phases:
     build:
         commands:
             - dotnet build -c Release ./CodeBuildDotnetTestReportExample/CodeBuildDotnetTestReportExample.csproj
-            - dotnet test -c Release ./CodeBuildDotnetTestReportExample.Tests/CodeBuildDotnetTestReportExample.Tests.csproj --logger trx --results-directory ../testresults
+            - dotnet test -c Release ./CodeBuildDotnetTestReportExample.Tests/CodeBuildDotnetTestReportExample.Tests.csproj --logger trx --results-directory ./testresults
     post_build:
         commands:
             - ~/.dotnet/tools/trx2junit ./testresults/*
