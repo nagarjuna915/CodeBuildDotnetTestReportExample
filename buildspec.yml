@@ -10,6 +10,7 @@ phases:
             - dotnet test -c Release ./CodeBuildDotnetTestReportExample.Tests/CodeBuildDotnetTestReportExample.Tests.csproj --logger trx --results-directory ./testresults
 reports:
     DotnetTestExamples:
+        file-format: VisualStudioTrx
         files:
             - '**/*'
         base-directory: './testresults'          
