@@ -2,7 +2,7 @@
 
 At AWS re:Invent 2019, [AWS CodeBuild](https://aws.amazon.com/codebuild/) announced a new test reporting feature which can help make diagnosing test failures in CodeBuild much easier. You can read more about it [here](https://aws.amazon.com/blogs/devops/test-reports-with-aws-codebuild/).
 
-As of the time of writing this post CodeBuild supports JUnit XML or Cucumber JSON formatted files for creating test reports. I wanted to use this feature for .NET and after a little research I was able to quickly add support for .NET tests to my CodeBuild projects. Let's take a look at how I made this work.
+I wanted to use this feature for .NET and after a little research I was able to quickly add support for .NET tests to my CodeBuild projects. Let's take a look at how I made this work.
 
 ## Project Setup
 
@@ -43,7 +43,7 @@ namespace CodeBuildDotnetTestReportExample.Tests
 
 To run this project with CodeBuild I first started with a `buildspec.yml` file that built my project and ran my tests.
 
-```yml
+```yaml
 version: 0.2
 
 phases:
@@ -58,53 +58,42 @@ phases:
 
 The first step to making my test reports was making sure the `dotnet test` command logged the test run. To do that I need to specify the logger format and where to put the logs. I changed the `dotnet test` command shown above to use the `trx` log format and to put the results in the `./testresults` directory.
 
-```yml
+```yaml
             - dotnet test -c Release <project-path> --logger trx --results-directory ./testresults
 ```
 
 ## What to do with a `trx` format file?
 
-As I mentioned earlier, test reporting from CodeBuild currently supports JUnit XML or Cucumber JSON formatted files. So what are we going to do with the `trx` format files that `dotnet test` created? The .NET community has created a .NET Core Global Tool called [trx2junit](https://www.nuget.org/packages/trx2junit/) that can be used to convert `trx` files into JUnit XML format files.
+To have CodeBuild use the trx files to create the test reports I need to add a new `reports` section to the `buildspec.yml` file. This snippet below grabs all of the xml files in the `./testresults` directory to generate test reports under the **DotnetTestExamples** report group in CodeBuild.
 
-My next step was to modify my `buildspec.yml` file to install the `trx2junit` global tool and then run it on the `trx` files created by `dotnet test`. To do that I first updated the **install** phase of my `buildspec.yml` file to install **trx2junit**.
+```yaml
+reports:
+    DotnetTestExamples:
+        file-format: VisualStudioTrx
+        files:
+            - '**/*'
+        base-directory: './testresults'
 
-```yml
-    install:
-        runtime-versions:
-            dotnet: 3.1
-        commands:
-            - dotnet tool install -g trx2junit
-            - dotnet build -c Release ...
 ```
 
-Next I added a **post_build** phase to convert the `trx` files in the **testresults** directory to JUnit XML files. Depending on the Docker image being used the `~/.dotnet/tools/` directory might not be in the **PATH** environment variable. If it is not then just executing **trx2junit** will fail because the executable can't be found. To ensure **trx2junit** can always be found I executed the tool using the full path relative to the home directory, bypassing the need for `~/.dotnet/tools/` to be in the **PATH** environment variable.
+By default CodeBuild will assume the test log files to be in JUnit XML format. To make sure CodeBuild understands the trx xml files I needed to set the `file-format` field in my `buildspec.yml` file to `VisualStudioTrx`.
 
-```yml
-    post_build:
-        commands:
-            - ~/.dotnet/tools/trx2junit ./testresults/*
-```
+Here is now the full version of my `buildspec.yml` that will run by my build, execute tests and collect the test logs for a CodeBuild test report.
 
-After converting the `trx` files I can now integrate .NET's test logging into CodeBuild's test reporting. The last update I needed to make to my `buildspec.yml` was to tell CodeBuild where to find the test logs using the **reports** section. Below is the final `buildspec.yml` I used, and inside the **reports** section you can see `DotnetTestExamples` was the name I chose for my test reports group for this project. You can read more about CodeBuild, and buildspec files, in the [CodeBuild User Guide](https://docs.aws.amazon.com/codebuild/latest/userguide/welcome.html).
-
-```yml
+```yaml
 version: 0.2
 
 phases:
     install:
         runtime-versions:
             dotnet: 3.1
-        commands:
-            - dotnet tool install -g trx2junit
     build:
         commands:
             - dotnet build -c Release ./CodeBuildDotnetTestReportExample/CodeBuildDotnetTestReportExample.csproj
             - dotnet test -c Release ./CodeBuildDotnetTestReportExample.Tests/CodeBuildDotnetTestReportExample.Tests.csproj --logger trx --results-directory ./testresults
-    post_build:
-        commands:
-            - ~/.dotnet/tools/trx2junit ./testresults/*
 reports:
     DotnetTestExamples:
+        file-format: VisualStudioTrx
         files:
             - '**/*'
         base-directory: './testresults'
