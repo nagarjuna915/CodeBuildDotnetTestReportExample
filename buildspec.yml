@@ -1,9 +1,5 @@
 version: 0.2
 
-env:
-    variables:
-        DOTNET_ROOT: /root/.dotnet
-
 phases:
     install:
         runtime-versions:
