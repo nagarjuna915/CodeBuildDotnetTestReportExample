@@ -121,7 +121,7 @@ A CodeBuild project can be configured with a variety of options, for example wha
 * Configure the Environment image
   * Operating System = Amazon Linux 2
   * Runtime = Standard
-  * Image = aws/codebuild/standard:3.0
+  * Image = aws/codebuild/amazonlinux2-x86_64-standard:3.0
   * Service Role = New service role
 * Click **Create build project** to finish
 
