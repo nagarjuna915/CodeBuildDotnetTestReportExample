@@ -64,7 +64,7 @@ The first step to making my test reports was making sure the `dotnet test` comma
 
 ## What to do with a `trx` format file?
 
-To have CodeBuild use the trx files to create the test reports I need to add a new `reports` section to the `buildspec.yml` file. This snippet below grabs all of the xml files in the `./testresults` directory to generate test reports under the **DotnetTestExamples** report group in CodeBuild.
+To have CodeBuild use the trx files to create the test reports I needed to add a new `reports` section to the `buildspec.yml` file. This snippet below grabs all of the xml files in the `./testresults` directory to generate test reports under the **DotnetTestExamples** report group in CodeBuild.
 
 ```yaml
 reports:
