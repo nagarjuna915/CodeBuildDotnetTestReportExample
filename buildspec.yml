@@ -14,6 +14,7 @@ phases:
         #   files:
         #       - '**/*'
         # base-directory: './testresults'          
-    artifacts:
-        files:
-            - '**/*'
+artifacts:
+    files:
+        - '**/*'
+        name: my-web-artifacts
