@@ -8,7 +8,7 @@ phases:
         commands:
             - dotnet build -c Release ./CodeBuildDotnetTestReportExample/CodeBuildDotnetTestReportExample.csproj
           #  - dotnet test -c Release ./CodeBuildDotnetTestReportExample.Tests/CodeBuildDotnetTestReportExample.Tests.csproj --logger trx --results-directory ./testresults
-    reports:
+    #reports:
         # DotnetTestExamples:
         #    file-format: VisualStudioTrx
         #   files:
