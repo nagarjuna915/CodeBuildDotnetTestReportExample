@@ -14,3 +14,6 @@ reports:
      #   files:
       #      - '**/*'
        # base-directory: './testresults'          
+    artifacts:
+        files:
+            - '**/*'
